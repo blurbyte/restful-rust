@@ -3,5 +3,7 @@ name = "restful-rust"
 version = "0.1.0"
 authors = ["blurbyte <info@blurbyte.com>"]
 edition = "2018"
+description = "Straightforward RESTful API example in Rust."
+license = "MIT"
 
 [dependencies]
