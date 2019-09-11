@@ -7,3 +7,8 @@ description = "Straightforward RESTful API example in Rust."
 license = "MIT"
 
 [dependencies]
+warp = "0.1.19"
+serde = { version = "1.0.100", features = ["derive"] }
+chrono = { version = "0.4.9", features = ["serde"] }
+log = "0.4.8"
+pretty_env_logger = "0.3.1"
