@@ -18,6 +18,7 @@ where
     Ok(value)
 }
 
+#[allow(clippy::trivially_copy_pass_by_ref)]
 pub fn serialize<S>(value: &u8, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,

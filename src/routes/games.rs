@@ -15,10 +15,7 @@ pub fn games_route() -> BoxedFilter<(impl Reply,)> {
     // GET /games
     let list = warp::get2().and(games_index).map(list_games);
 
-    // Combine all games routes
-    let api = list.boxed();
-
-    api
+    list.boxed()
 }
 
 // GET /games
