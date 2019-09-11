@@ -1,3 +1,7 @@
+pub mod routes;
+mod schema;
+mod utils;
+
 #[cfg(test)]
 mod tests {
     #[test]
