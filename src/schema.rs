@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::utils::validate_rating;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Game {
     pub id: u64,
@@ -15,7 +15,7 @@ pub struct Game {
     pub release_date: NaiveDateTime,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Genre {
     RolePlaying,
