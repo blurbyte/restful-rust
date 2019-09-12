@@ -17,7 +17,7 @@ pub fn games_route() -> BoxedFilter<(impl Reply,)> {
                 title: String::from("Dark Souls"),
                 rating: 91,
                 genre: Genre::RolePlaying,
-                description: String::from("Takes place in the fictional kingdom of Lordran, where players assume the role of a cursed undead character who begins a pilgrimage to discover the fate of their kind.."),
+                description: String::from("Takes place in the fictional kingdom of Lordran, where players assume the role of a cursed undead character who begins a pilgrimage to discover the fate of their kind."),
                 release_date: NaiveDate::from_ymd(2011, 9, 22).and_hms(0, 0, 0),
             },
             Game {

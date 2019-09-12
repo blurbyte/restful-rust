@@ -1,6 +1,9 @@
+use log::error;
 use serde::de::{Deserializer, Error as DeserializerError, Unexpected};
 use serde::ser::{Error as SerializerError, Serializer};
 use serde::Deserialize;
+
+const ERROR_MESSAGE: &str = "rating must be a number between 0 and 100";
 
 pub fn deserialize<'de, D>(deserializer: D) -> Result<u8, D::Error>
 where
@@ -9,10 +12,9 @@ where
     let value = u8::deserialize(deserializer)?;
 
     if value > 100 {
-        return Err(DeserializerError::invalid_value(
-            Unexpected::Unsigned(u64::from(value)),
-            &"rating must be a number between 0 and 100",
-        ));
+        error!("{}", ERROR_MESSAGE);
+
+        return Err(DeserializerError::invalid_value(Unexpected::Unsigned(u64::from(value)), &ERROR_MESSAGE));
     }
 
     Ok(value)
@@ -24,7 +26,9 @@ where
     S: Serializer,
 {
     if *value > 100 {
-        return Err(SerializerError::custom("rating must be a number between 0 and 100"));
+        error!("{}", ERROR_MESSAGE);
+
+        return Err(SerializerError::custom(ERROR_MESSAGE));
     }
 
     serializer.serialize_u8(*value)
