@@ -1,6 +1,7 @@
+mod filters;
 pub mod routes;
 mod schema;
-mod utils;
+mod validators;
 
 #[cfg(test)]
 mod tests {

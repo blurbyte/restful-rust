@@ -4,12 +4,18 @@ use chrono::prelude::*;
 use log::debug;
 use warp::{filters::BoxedFilter, Filter, Reply};
 
+use crate::filters::{self, ListOptions};
 use crate::schema::{Game, Genre};
 
 type Db = Arc<Mutex<Vec<Game>>>;
 
+/// Provides RESTful API for games:
+///
+/// - `GET /games`: return JSON list of games
+
 pub fn games_route() -> BoxedFilter<(impl Reply,)> {
     // For presentation purposes keep mocked data in in-memory structure
+    // In real life scenario connection with regular database would be established
     let db = Arc::new(Mutex::new(
         vec![
             Game {
@@ -40,17 +46,24 @@ pub fn games_route() -> BoxedFilter<(impl Reply,)> {
     // For example `GET /games` is OK, but `GET /games/23` is not
     let games_index = games.and(warp::path::end());
 
-    // GET /games
-    let list = warp::get2().and(games_index).and(db.clone()).map(list_games);
+    // `GET /games`
+    let list = warp::get2().and(games_index).and(filters::list_options()).and(db.clone()).map(list_games);
 
     list.boxed()
 }
 
-// GET /games
-fn list_games(db: Db) -> impl Reply {
+// `GET /games`
+// Allows pagination, for example: `GET /games?offset=10&limit=5`
+fn list_games(options: ListOptions, db: Db) -> impl Reply {
     debug!("list all games");
 
-    let games: Vec<Game> = db.lock().unwrap().to_vec();
+    let games = db.lock().unwrap();
+    let games: Vec<Game> = games
+        .clone()
+        .into_iter()
+        .skip(options.offset.unwrap_or(0))
+        .take(options.limit.unwrap_or(std::usize::MAX))
+        .collect();
 
     warp::reply::json(&games)
 }
