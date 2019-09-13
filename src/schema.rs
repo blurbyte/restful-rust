@@ -1,14 +1,14 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use crate::utils::validate_rating;
+use crate::validators;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Game {
     pub id: u64,
     pub title: String,
-    #[serde(with = "validate_rating")]
+    #[serde(with = "validators::validate_game_rating")]
     pub rating: u8,
     pub genre: Genre,
     pub description: String,
