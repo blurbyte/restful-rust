@@ -11,7 +11,7 @@ pub struct Game {
     #[serde(with = "validators::validate_game_rating")]
     pub rating: u8,
     pub genre: Genre,
-    pub description: String,
+    pub description: Option<String>,
     pub release_date: NaiveDateTime,
 }
 
