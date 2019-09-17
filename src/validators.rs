@@ -17,7 +17,10 @@ pub mod validate_game_rating {
         if value > 100 {
             error!("{}", ERROR_MESSAGE);
 
-            return Err(DeserializerError::invalid_value(Unexpected::Unsigned(u64::from(value)), &ERROR_MESSAGE));
+            return Err(DeserializerError::invalid_value(
+                Unexpected::Unsigned(u64::from(value)),
+                &ERROR_MESSAGE,
+            ));
         }
 
         Ok(value)
