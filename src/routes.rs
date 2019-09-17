@@ -11,7 +11,8 @@ type Db = Arc<Mutex<Vec<Game>>>;
 /// Provides RESTful API for games:
 ///
 /// - `GET /games`: return JSON list of games
-/// - `POST /games`: create new game entry
+/// - `POST /games`: create a new game entry
+/// - `PUT /games/:id`: update a specyfic game
 
 pub fn games_routes(db: Db) -> BoxedFilter<(impl Reply,)> {
     let db = warp::any().map(move || db.clone());
@@ -22,6 +23,9 @@ pub fn games_routes(db: Db) -> BoxedFilter<(impl Reply,)> {
     // Make sure nothing comes after "games"
     // For example `GET /games` is OK, but `GET /games/23` is not
     let games_index = games.and(warp::path::end());
+
+    // Refer to specyfic game by ID
+    let game_id = games.and(warp::path::param::<u64>()).and(warp::path::end());
 
     // `GET /games`
     let list = warp::get2()
@@ -37,7 +41,14 @@ pub fn games_routes(db: Db) -> BoxedFilter<(impl Reply,)> {
         .and(db.clone())
         .and_then(create_game);
 
-    let api = list.or(create);
+    // `PUT /games/:id`
+    let update = warp::put2()
+        .and(game_id)
+        .and(filters::json_body())
+        .and(db.clone())
+        .and_then(update_game);
+
+    let api = list.or(create).or(update);
 
     api.boxed()
 }
@@ -74,6 +85,26 @@ fn create_game(new_game: Game, db: Db) -> Result<impl Reply, Rejection> {
         None => {
             games.push(new_game);
             Ok(StatusCode::CREATED)
+        }
+    }
+}
+
+// `PUT /games/:id`
+fn update_game(id: u64, updated_game: Game, db: Db) -> Result<impl Reply, Rejection> {
+    debug!("update existing game: id={}, game={:?}", id, updated_game);
+
+    let mut games = db.lock().unwrap();
+
+    match games.iter_mut().find(|game| game.id == id) {
+        Some(game) => {
+            *game = updated_game;
+
+            Ok(StatusCode::OK)
+        }
+        None => {
+            debug!("game of given ID not found");
+
+            Ok(StatusCode::NOT_FOUND)
         }
     }
 }
