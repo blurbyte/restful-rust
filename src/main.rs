@@ -1,8 +1,6 @@
 use std::env;
 
-use warp::Filter;
-
-use restful_rust::routes::games;
+use restful_rust;
 
 fn main() {
     // Show debug logs by default by setting `RUST_LOG=restful_rust=debug`
@@ -11,9 +9,7 @@ fn main() {
     }
     pretty_env_logger::init();
 
-    let games = games::games_route();
-
-    let routes = games.with(warp::log("restful_rust"));
-
-    warp::serve(routes).run(([127, 0, 0, 1], 8080));
+    if let Err(error) = restful_rust::run() {
+        eprintln!("{}", error);
+    }
 }
