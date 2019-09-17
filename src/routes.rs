@@ -13,6 +13,7 @@ type Db = Arc<Mutex<Vec<Game>>>;
 /// - `GET /games`: return JSON list of games
 /// - `POST /games`: create a new game entry
 /// - `PUT /games/:id`: update a specyfic game
+/// - `DELETE /games/:id`: delete a specyfic game
 
 pub fn games_routes(db: Db) -> BoxedFilter<(impl Reply,)> {
     let db = warp::any().map(move || db.clone());
@@ -24,7 +25,7 @@ pub fn games_routes(db: Db) -> BoxedFilter<(impl Reply,)> {
     // For example `GET /games` is OK, but `GET /games/23` is not
     let games_index = games.and(warp::path::end());
 
-    // Refer to specyfic game by ID
+    // Refer to specyfic game by id
     let game_id = games.and(warp::path::param::<u64>()).and(warp::path::end());
 
     // `GET /games`
@@ -48,7 +49,10 @@ pub fn games_routes(db: Db) -> BoxedFilter<(impl Reply,)> {
         .and(db.clone())
         .and_then(update_game);
 
-    let api = list.or(create).or(update);
+    // `DELETE /games/:id`
+    let delete = warp::delete2().and(game_id).and(db.clone()).and_then(delete_game);
+
+    let api = list.or(create).or(update).or(delete);
 
     api.boxed()
 }
@@ -78,7 +82,7 @@ fn create_game(new_game: Game, db: Db) -> Result<impl Reply, Rejection> {
 
     match games.iter().find(|game| game.id == new_game.id) {
         Some(game) => {
-            debug!("game of given ID already exists: {}", game.id);
+            debug!("game of given id already exists: {}", game.id);
 
             Ok(StatusCode::BAD_REQUEST)
         }
@@ -102,9 +106,32 @@ fn update_game(id: u64, updated_game: Game, db: Db) -> Result<impl Reply, Reject
             Ok(StatusCode::OK)
         }
         None => {
-            debug!("game of given ID not found");
+            debug!("game of given id not found");
 
             Ok(StatusCode::NOT_FOUND)
         }
+    }
+}
+
+// `DELETE /games/:id`
+fn delete_game(id: u64, db: Db) -> Result<impl Reply, Rejection> {
+    debug!("delete game: id={}", id);
+
+    let mut games = db.lock().unwrap();
+
+    let len = games.len();
+
+    // Removes all games with given id
+    games.retain(|game| game.id != id);
+
+    // If games length was smaller specyfic game was found and removed
+    let deleted = games.len() != len;
+
+    if deleted {
+        Ok(StatusCode::NO_CONTENT)
+    } else {
+        debug!("game of given id not found");
+
+        Ok(StatusCode::NOT_FOUND)
     }
 }
