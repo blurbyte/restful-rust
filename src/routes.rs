@@ -135,3 +135,200 @@ fn delete_game(id: u64, db: Db) -> Result<impl Reply, Rejection> {
         Ok(StatusCode::NOT_FOUND)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::schema::Genre;
+    use chrono::prelude::*;
+
+    // Mocked dataset for each test
+    fn mocked_db() -> Db {
+        Arc::new(Mutex::new(vec![
+            Game {
+                id: 1,
+                title: String::from("Crappy title"),
+                rating: 35,
+                genre: Genre::RolePlaying,
+                description: Some(String::from("Test description...")),
+                release_date: NaiveDate::from_ymd(2011, 9, 22).and_hms(0, 0, 0),
+            },
+            Game {
+                id: 2,
+                title: String::from("Decent game"),
+                rating: 84,
+                genre: Genre::Strategy,
+                description: None,
+                release_date: NaiveDate::from_ymd(2014, 3, 11).and_hms(0, 0, 0),
+            },
+        ]))
+    }
+
+    #[test]
+    fn get_list_of_games_200() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request().path("/games").reply(&filter);
+
+        assert_eq!(res.status(), 200);
+
+        let expected_json_body = r#"[{"id":1,"title":"Crappy title","rating":35,"genre":"ROLE_PLAYING","description":"Test description...","releaseDate":"2011-09-22T00:00:00"},{"id":2,"title":"Decent game","rating":84,"genre":"STRATEGY","description":null,"releaseDate":"2014-03-11T00:00:00"}]"#;
+        assert_eq!(res.body(), expected_json_body);
+    }
+
+    #[test]
+    fn get_wrong_path_405() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request().path("/games/42").reply(&filter);
+
+        assert_eq!(res.status(), 405);
+    }
+
+    #[test]
+    fn post_json_201() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let json_payload = r#"{"id":3,"title":"Another game","rating":65,"genre":"STRATEGY","description":null,"releaseDate":"2016-03-11T00:00:00"}"#;
+        let res = warp::test::request()
+            .method("POST")
+            .header("content-length", 1024 * 16)
+            .body(&json_payload)
+            .path("/games")
+            .reply(&filter);
+
+        assert_eq!(res.status(), 201);
+        assert_eq!(db.lock().unwrap().len(), 3);
+    }
+
+    #[test]
+    fn post_too_long_content_413() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let json_payload = r#"{"id":3,"title":"Another game","rating":65,"genre":"STRATEGY","description":null,"releaseDate":"2016-03-11T00:00:00"}"#;
+        let res = warp::test::request()
+            .method("POST")
+            .header("content-length", 1024 * 36)
+            .body(&json_payload)
+            .path("/games")
+            .reply(&filter);
+
+        assert_eq!(res.status(), 413);
+    }
+
+    #[test]
+    fn post_wrong_payload_400() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request()
+            .method("POST")
+            .header("content-length", 1024 * 16)
+            .body(&r#"{"id":4}"#)
+            .path("/games")
+            .reply(&filter);
+
+        assert_eq!(res.status(), 400);
+    }
+
+    #[test]
+    fn post_wrong_path_405() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request().method("POST").path("/games/42").reply(&filter);
+
+        assert_eq!(res.status(), 405);
+    }
+
+    #[test]
+    fn put_json_200() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let json_payload = r#"{"id":2,"title":"Decent game","rating":84,"genre":"STRATEGY","description":"New description","releaseDate":"2014-03-11T00:00:00"}"#;
+        let res = warp::test::request()
+            .method("PUT")
+            .header("content-length", 1024 * 16)
+            .body(&json_payload)
+            .path("/games/2")
+            .reply(&filter);
+
+        assert_eq!(res.status(), 200);
+
+        let db = db.lock().unwrap();
+        let description = db[1].description.as_ref().unwrap();
+        assert_eq!(description, "New description");
+    }
+
+    #[test]
+    fn put_wrong_id_404() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let json_payload = r#"{"id":2,"title":"Decent game","rating":84,"genre":"STRATEGY","description":"New description","releaseDate":"2014-03-11T00:00:00"}"#;
+        let res = warp::test::request()
+            .method("PUT")
+            .header("content-length", 1024 * 16)
+            .body(&json_payload)
+            .path("/games/42")
+            .reply(&filter);
+
+        assert_eq!(res.status(), 404);
+    }
+
+    #[test]
+    fn put_wrong_payload_400() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request()
+            .method("PUT")
+            .header("content-length", 1024 * 16)
+            .body(&r#"{"id":2"#)
+            .path("/games/42")
+            .reply(&filter);
+
+        assert_eq!(res.status(), 400);
+    }
+
+    #[test]
+    fn put_too_long_content_413() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request()
+            .method("PUT")
+            .header("content-length", 1024 * 36)
+            .path("/games/2")
+            .reply(&filter);
+
+        assert_eq!(res.status(), 413);
+    }
+
+    #[test]
+    fn delete_wrong_id() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request().method("DELETE").path("/games/42").reply(&filter);
+
+        assert_eq!(res.status(), 404);
+    }
+
+    #[test]
+    fn delete_game() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request().method("DELETE").path("/games/1").reply(&filter);
+
+        assert_eq!(res.status(), 204);
+        assert_eq!(db.lock().unwrap().len(), 1);
+    }
+}
