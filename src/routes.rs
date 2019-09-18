@@ -291,7 +291,7 @@ mod tests {
             .method("PUT")
             .header("content-length", 1024 * 16)
             .body(&r#"{"id":2"#)
-            .path("/games/42")
+            .path("/games/2")
             .reply(&filter);
 
         assert_eq!(res.status(), 400);
@@ -312,7 +312,7 @@ mod tests {
     }
 
     #[test]
-    fn delete_wrong_id() {
+    fn delete_wrong_id_404() {
         let db = mocked_db();
         let filter = games_routes(db.clone());
 
@@ -322,7 +322,7 @@ mod tests {
     }
 
     #[test]
-    fn delete_game() {
+    fn delete_game_204() {
         let db = mocked_db();
         let filter = games_routes(db.clone());
 
