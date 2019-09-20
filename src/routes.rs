@@ -179,6 +179,42 @@ mod tests {
     }
 
     #[test]
+    fn get_list_of_games_with_options_200() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request().path("/games?offset=1&limit=5").reply(&filter);
+
+        assert_eq!(res.status(), 200);
+
+        let expected_json_body = r#"[{"id":2,"title":"Decent game","rating":84,"genre":"STRATEGY","description":null,"releaseDate":"2014-03-11T00:00:00"}]"#;
+        assert_eq!(res.body(), expected_json_body);
+    }
+
+    #[test]
+    fn get_empty_list_with_offset_overshot_200() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request().path("/games?offset=5&limit=5").reply(&filter);
+
+        assert_eq!(res.status(), 200);
+
+        let expected_json_body = r#"[]"#;
+        assert_eq!(res.body(), expected_json_body);
+    }
+
+    #[test]
+    fn get_incorrect_options_400() {
+        let db = mocked_db();
+        let filter = games_routes(db.clone());
+
+        let res = warp::test::request().path("/games?offset=a&limit=b").reply(&filter);
+
+        assert_eq!(res.status(), 400);
+    }
+
+    #[test]
     fn get_wrong_path_405() {
         let db = mocked_db();
         let filter = games_routes(db.clone());
