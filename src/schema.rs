@@ -1,8 +1,9 @@
-use chrono::NaiveDateTime;
+// Common types used across API
+
+use chrono::{NaiveDate, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use chrono::prelude::*;
 
 use crate::validators;
 
@@ -24,6 +25,12 @@ pub enum Genre {
     RolePlaying,
     Strategy,
     Shooter,
+}
+
+#[derive(Deserialize, Debug, PartialEq)]
+pub struct ListOptions {
+    pub offset: Option<usize>,
+    pub limit: Option<usize>,
 }
 
 // For presentation purposes keep mocked data in in-memory structure
