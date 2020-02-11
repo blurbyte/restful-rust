@@ -2,7 +2,7 @@ language: rust
 sudo: false
 
 rust:
-  - 1.40.0
+  - 1.41.0
 
 cache: cargo
 
