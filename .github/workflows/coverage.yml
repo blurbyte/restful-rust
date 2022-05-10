@@ -27,11 +27,12 @@ jobs:
           RUSTDOCFLAGS: "-C instrument-coverage"
           LLVM_PROFILE_FILE: "coverage_data-%p-%m.profraw"
       - id: coverage
+        name: Prepare coverage data
         run: |
           cargo install grcov
           grcov . -s . --binary-path ./target/debug -t lcov --branch --ignore-not-existing -o ./target/report.lcov
       - name: Coveralls upload
-        uses: coverallsapp/github-action@master
+        uses: toshke/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./target/report.lcov
