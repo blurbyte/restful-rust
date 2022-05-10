@@ -28,8 +28,8 @@ jobs:
           LLVM_PROFILE_FILE: "coverage_data-%p-%m.profraw"
       - id: coverage
         run: |
-        cargo install grcov
-        grcov . -s . --binary-path ./target/debug -t lcov --branch --ignore-not-existing -o ./target/report.lcov
+          cargo install grcov
+          grcov . -s . --binary-path ./target/debug -t lcov --branch --ignore-not-existing -o ./target/report.lcov
       - name: Coveralls upload
         uses: coverallsapp/github-action@master
         with:
