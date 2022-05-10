@@ -25,9 +25,6 @@ jobs:
           CARGO_INCREMENTAL: '0'
           RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
           RUSTDOCFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
-      - name: 'Output debug info'
-        run: |
-          ls -la **/** | grep '.gc'
       - id: coverage
         uses: actions-rs/grcov@master
       - name: Coveralls upload
