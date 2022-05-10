@@ -33,6 +33,8 @@ jobs:
           grcov . -s . --binary-path ./target/debug -t lcov --branch --ignore-not-existing -o ./target/report.lcov
       - name: Coveralls upload
         uses: toshke/github-action@master
+        env:
+          NODE_COVERALLS_DEBUG: "1"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ./target/report.lcov
