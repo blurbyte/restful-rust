@@ -28,13 +28,14 @@ jobs:
           LLVM_PROFILE_FILE: "coverage_data-%p-%m.profraw"
       - id: coverage
         name: Prepare coverage data
+        env:
+          COVERALLS_REPO_TOKEN: {{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           cargo install grcov
-          grcov . -s . --binary-path ./target/debug -t lcov --branch --ignore-not-existing -o ./target/report.lcov
+          grcov . -s . --binary-path ./target/debug -t coveralls --branch --ignore-not-existing -o ./target/coveralls_coverage.json --token $COVERALLS_REPO_TOKEN
       - name: Coveralls upload
         uses: toshke/github-action@master
-        env:
-          NODE_COVERALLS_DEBUG: "1"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./target/report.lcov
+          path-to-lcov: ./target/coveralls_coverage.json
+          file-format: coveralls
