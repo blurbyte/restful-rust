@@ -16,6 +16,7 @@ To run the project locally:
 5. lint code with `cargo clippy` and format it with `cargo fmt`
 6. run `cargo build --release` command to generate single optimized binary
 
+
 ### Dependencies overview
 
 Dependency | Description
