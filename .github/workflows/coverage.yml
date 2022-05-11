@@ -37,7 +37,7 @@ jobs:
         name: archive-coverage
         uses: actions/upload-artifact@v3
         with:
-          path: target/coveralls.json
+          path: target/coveralls_coverage.json
           name: coveralls-coverage
       - name: Coveralls upload
         uses: toshke/github-action@master
