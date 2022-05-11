@@ -28,8 +28,6 @@ jobs:
           LLVM_PROFILE_FILE: "coverage_data-%p-%m.profraw"
       - id: coverage
         name: Prepare coverage data
-        with: # Set Azure credentials secret as an input
-          credentials: ${{ secrets.COVERALLS_REPO_TOKEN }}
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
