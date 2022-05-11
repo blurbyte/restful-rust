@@ -33,6 +33,12 @@ jobs:
         run: |
           cargo install grcov
           grcov . -s . --binary-path ./target/debug -t coveralls --branch --ignore-not-existing -o ./target/coveralls_coverage.json --token $COVERALLS_REPO_TOKEN --vcs-branch $GITHUB_REF_NAME
+      - id: archive-coverage
+        name: archive-coverage
+        uses: actions/upload-artifact@v3
+        with:
+          path: target/coveralls.json
+          name: coveralls-coverage
       - name: Coveralls upload
         uses: toshke/github-action@master
         with:
