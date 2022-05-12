@@ -37,7 +37,7 @@ jobs:
              --token $COVERALLS_REPO_TOKEN \
              --vcs-branch $GITHUB_REF_NAME \
              --service-name github \
-             --service-job-id ${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}
+             --service-job-id ${GITHUB_RUN_ID}
       - id: archive-coverage
         name: archive-coverage
         uses: actions/upload-artifact@v3
